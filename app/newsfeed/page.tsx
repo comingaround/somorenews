@@ -1,18 +1,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from "@/components/general/navbar/navbar";
 import Newsfeed01Container from "@/components/newsfeed/newsfeed-01-container/newsfeed-01-container";
 import { Article, NewsAPIArticle } from "@/components/newsfeed/newsfeed-01-container/newsfeed-01-container";
 
 export default function Newsfeed() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL params or defaults
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [displayPage, setDisplayPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams.get('category') || 'breaking news'
+  );
+  const [searchQuery, setSearchQuery] = useState<string>(
+    searchParams.get('search') || ''
+  );
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams.get('page') || '1')
+  );
+  const [totalResults, setTotalResults] = useState(0);
 
-  const fetchNews = async () => {
+  const articlesPerPage = 4;
+
+  // Update URL when state changes
+  const updateURL = (page: number, category: string, search: string) => {
+    const params = new URLSearchParams();
+    params.set('page', page.toString());
+    if (search) {
+      params.set('search', search);
+    } else {
+      params.set('category', category);
+    }
+    router.push(`/newsfeed?${params.toString()}`, { scroll: false });
+  };
+
+  const fetchNews = async (query: string, page: number) => {
     setLoading(true);
     setError('');
 
@@ -23,93 +50,45 @@ export default function Newsfeed() {
         throw new Error('API key not found');
       }
 
-      // Paywalled sources to filter out
-      const paywalledSources = [
-        'Bloomberg',
-        'The Wall Street Journal',
-        'Financial Times',
-        'The New York Times',
-        'The Washington Post',
-        'The Economist',
-        'Barron\'s',
-        'MarketWatch',
-        'The Times',
-        'The Telegraph'
-      ];
+      console.log(`[FETCH] Query: ${query}, Page: ${page}`);
 
-      let collectedArticles: Article[] = [];
-      let page = currentPage;
-      let startPage = currentPage; // Track which page we started from
-      let attempts = 0;
+      // Use /everything endpoint with query parameter (search in title only)
+      const response = await fetch(
+        `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&searchIn=title&pageSize=${articlesPerPage}&page=${page}&sortBy=popularity&language=en&apiKey=${apiKey}`
+      );
 
-      // Keep fetching until we have 12 valid articles
-      while (collectedArticles.length < 12 && attempts < 10) {
-        const response = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=us&pageSize=20&page=${page}&apiKey=${apiKey}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch news');
-        }
-
-        const data = await response.json();
-
-        // Check if we've run out of articles - reset to page 1
-        if (!data.articles || data.articles.length === 0) {
-          if (page === 1) {
-            // Already at page 1 and no articles, something is wrong
-            break;
-          }
-          // Reset to beginning
-          page = 1;
-          startPage = 1; // Update startPage since we reset
-          setCurrentPage(1);
-          continue;
-        }
-
-        // Filter out paywalled sources
-        const validArticles = data.articles.filter((article: NewsAPIArticle) =>
-          !paywalledSources.includes(article.source.name)
-        );
-
-        // Map to our Article format and add to collection
-        const mapped: Article[] = validArticles.map((article: NewsAPIArticle, index: number) => ({
-          id: collectedArticles.length + index,
-          title: article.title,
-          description: article.description || undefined,
-          content: article.content || undefined,
-          image: article.urlToImage || undefined,
-          author: article.author || undefined,
-          source: article.source.name,
-          publishedAt: article.publishedAt,
-          url: article.url,
-        }));
-
-        collectedArticles = [...collectedArticles, ...mapped];
-        page++;
-        attempts++;
+      if (!response.ok) {
+        throw new Error('Failed to fetch news');
       }
 
-      // If we don't have enough articles after all attempts, reset to page 1
-      if (collectedArticles.length < 12) {
-        setCurrentPage(1);
-        setDisplayPage(1);
-      } else {
-        // Take exactly 12 articles
-        setArticles(collectedArticles.slice(0, 12));
-        // Update currentPage for next refresh
-        setCurrentPage(page);
-        // Update display page to show which page user is viewing
-        setDisplayPage(startPage);
-      }
+      const data = await response.json();
 
-      // Make sure we always set articles even if less than 12
-      if (collectedArticles.length > 0) {
-        setArticles(collectedArticles.slice(0, 12));
-        setDisplayPage(startPage);
+      console.log(`[FETCH COMPLETE] Total results: ${data.totalResults}, Fetched: ${data.articles.length}`);
+
+      // Map to our Article format
+      const mappedArticles: Article[] = data.articles.map((article: NewsAPIArticle, index: number) => ({
+        id: `${page}-${index}`,
+        title: article.title,
+        description: article.description || undefined,
+        content: article.content || undefined,
+        image: article.urlToImage || undefined,
+        author: article.author || undefined,
+        source: article.source.name,
+        publishedAt: article.publishedAt,
+        url: article.url,
+        category: query
+      }));
+
+      setArticles(mappedArticles);
+      setTotalResults(data.totalResults);
+
+      // Store articles in localStorage for detail page access
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('newsfeed_articles', JSON.stringify(mappedArticles));
       }
 
     } catch (err) {
+      console.error('[FETCH ERROR]', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
@@ -117,8 +96,43 @@ export default function Newsfeed() {
   };
 
   useEffect(() => {
-    fetchNews();
-  }, []);
+    // Fetch based on search query or selected category
+    const query = searchQuery || selectedCategory;
+    fetchNews(query, currentPage);
+  }, [selectedCategory, searchQuery, currentPage]);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setSearchQuery(''); // Clear search when selecting category
+    setCurrentPage(1); // Reset to page 1 when category changes
+    updateURL(1, category, '');
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setSelectedCategory(''); // Clear category when searching
+    setCurrentPage(1); // Reset to page 1 when searching
+    updateURL(1, '', query);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      updateURL(newPage, selectedCategory, searchQuery);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      updateURL(newPage, selectedCategory, searchQuery);
+    }
+  };
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalResults / articlesPerPage);
 
   return (
     <>
@@ -127,8 +141,14 @@ export default function Newsfeed() {
         articles={articles}
         isLoading={loading}
         error={error}
-        onRefresh={fetchNews}
-        currentPage={displayPage}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onNextPage={handleNextPage}
+        onPrevPage={handlePrevPage}
+        selectedCategory={selectedCategory}
+        onCategoryChange={handleCategoryChange}
+        searchQuery={searchQuery}
+        onSearch={handleSearch}
       />
     </>
   );

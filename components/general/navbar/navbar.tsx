@@ -40,6 +40,12 @@ export default function Navbar() {
             NEWSFEED
           </Link>
           <Link
+            href="/testfeed"
+            className={`navbar-link ${pathname === '/testfeed' ? 'navbar-link-active' : ''}`}
+          >
+            TESTFEED
+          </Link>
+          <Link
             href="/about"
             className={`navbar-link ${pathname === '/about' ? 'navbar-link-active' : ''}`}
           >
