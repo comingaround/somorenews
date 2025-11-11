@@ -15,6 +15,8 @@
 .newsfeed-refresh-wrapper {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
@@ -27,6 +29,13 @@
   letter-spacing: 0.05em;
   padding: 0.8rem 2.5rem;
   cursor: pointer;
+}
+
+.newsfeed-page-counter {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a202c;
+  letter-spacing: 0.05em;
 }
 
 /* Flexbox Layout - 2 per row */

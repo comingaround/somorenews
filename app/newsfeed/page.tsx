@@ -9,6 +9,8 @@ export default function Newsfeed() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [displayPage, setDisplayPage] = useState(1);
 
   const fetchNews = async () => {
     setLoading(true);
@@ -35,29 +37,44 @@ export default function Newsfeed() {
         'The Telegraph'
       ];
 
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=us&pageSize=100&apiKey=${apiKey}`
-      );
+      let collectedArticles: Article[] = [];
+      let page = currentPage;
+      let startPage = currentPage; // Track which page we started from
+      let attempts = 0;
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch news');
-      }
+      // Keep fetching until we have 12 valid articles
+      while (collectedArticles.length < 12 && attempts < 10) {
+        const response = await fetch(
+          `https://newsapi.org/v2/top-headlines?country=us&pageSize=20&page=${page}&apiKey=${apiKey}`
+        );
 
-      const data = await response.json();
+        if (!response.ok) {
+          throw new Error('Failed to fetch news');
+        }
 
-      // Filter out paywalled sources
-      const filteredArticles = data.articles.filter((article: NewsAPIArticle) =>
-        !paywalledSources.includes(article.source.name)
-      );
+        const data = await response.json();
 
-      // Shuffle the filtered articles to get different ones each time
-      const shuffled = [...filteredArticles].sort(() => Math.random() - 0.5);
+        // Check if we've run out of articles - reset to page 1
+        if (!data.articles || data.articles.length === 0) {
+          if (page === 1) {
+            // Already at page 1 and no articles, something is wrong
+            break;
+          }
+          // Reset to beginning
+          page = 1;
+          startPage = 1; // Update startPage since we reset
+          setCurrentPage(1);
+          continue;
+        }
 
-      // Take first 12 from shuffled array
-      const mappedArticles: Article[] = shuffled
-        .slice(0, 12)
-        .map((article: NewsAPIArticle, index: number) => ({
-          id: index,
+        // Filter out paywalled sources
+        const validArticles = data.articles.filter((article: NewsAPIArticle) =>
+          !paywalledSources.includes(article.source.name)
+        );
+
+        // Map to our Article format and add to collection
+        const mapped: Article[] = validArticles.map((article: NewsAPIArticle, index: number) => ({
+          id: collectedArticles.length + index,
           title: article.title,
           description: article.description || undefined,
           content: article.content || undefined,
@@ -68,7 +85,30 @@ export default function Newsfeed() {
           url: article.url,
         }));
 
-      setArticles(mappedArticles);
+        collectedArticles = [...collectedArticles, ...mapped];
+        page++;
+        attempts++;
+      }
+
+      // If we don't have enough articles after all attempts, reset to page 1
+      if (collectedArticles.length < 12) {
+        setCurrentPage(1);
+        setDisplayPage(1);
+      } else {
+        // Take exactly 12 articles
+        setArticles(collectedArticles.slice(0, 12));
+        // Update currentPage for next refresh
+        setCurrentPage(page);
+        // Update display page to show which page user is viewing
+        setDisplayPage(startPage);
+      }
+
+      // Make sure we always set articles even if less than 12
+      if (collectedArticles.length > 0) {
+        setArticles(collectedArticles.slice(0, 12));
+        setDisplayPage(startPage);
+      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -88,6 +128,7 @@ export default function Newsfeed() {
         isLoading={loading}
         error={error}
         onRefresh={fetchNews}
+        currentPage={displayPage}
       />
     </>
   );

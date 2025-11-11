@@ -13,7 +13,7 @@ export default function Navbar() {
         {/* Left Section: Logo + Separator + Burger */}
         <div className="navbar-left">
           <Link href="/" className="navbar-logo">
-            So.News
+            No.Press
           </Link>
 
           <div className="navbar-separator"></div>

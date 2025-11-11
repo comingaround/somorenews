@@ -39,13 +39,15 @@ interface NewsfeedContainerProps {
   isLoading?: boolean;
   error?: string;
   onRefresh?: () => void;
+  currentPage?: number;
 }
 
 export default function Newsfeed01Container({
   articles,
   isLoading = false,
   error,
-  onRefresh
+  onRefresh,
+  currentPage
 }: NewsfeedContainerProps) {
 
   // Loading state
@@ -107,6 +109,9 @@ export default function Newsfeed01Container({
             <button onClick={onRefresh} className="newsfeed-refresh-button">
               REFRESH
             </button>
+            {currentPage && (
+              <span className="newsfeed-page-counter">Page {currentPage}</span>
+            )}
           </div>
         )}
 
