@@ -1,0 +1,146 @@
+/* Hero Section - Matching 02.webp warm background */
+.home-01-hero {
+  background: #f5f5f0;
+  width: 100%;
+  padding: 3rem 0 2rem 0;
+}
+
+.hero-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Main Headline - "TODAY NEWS" */
+.hero-title {
+  font-size: 4rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 3rem;
+  letter-spacing: 0.05em;
+  color: #1a202c;
+}
+
+.hero-title-accent {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-title-accent::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: #F4A261;
+  z-index: -1;
+}
+
+/* Search and Filter Controls */
+.hero-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+/* Search Bar */
+.hero-search {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.hero-search-icon {
+  position: absolute;
+  left: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #718096;
+  width: 20px;
+  height: 20px;
+}
+
+.hero-search-input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 3.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  border: 2px solid #d4d4d0;
+  background: transparent;
+  color: #1a202c;
+  transition: border-color 0.3s ease;
+}
+
+.hero-search-input::placeholder {
+  color: #a0aec0;
+  font-weight: 500;
+}
+
+.hero-search-input:focus {
+  outline: none;
+  border-color: #F4A261;
+}
+
+/* Category Filter Tabs */
+.hero-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-category {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #718096;
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.hero-category:hover {
+  color: #1a202c;
+}
+
+.hero-category-active {
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.hero-category-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #F4A261;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-title-accent::after {
+    height: 12px;
+    bottom: 4px;
+  }
+
+  .hero-categories {
+    gap: 1rem;
+  }
+
+  .hero-category {
+    font-size: 0.75rem;
+  }
+}

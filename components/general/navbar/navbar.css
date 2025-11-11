@@ -1,0 +1,179 @@
+/* Navbar - Based on 02.webp (Lo.News) */
+.navbar {
+  background: #f5f5f0;
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Left Section: Logo + Separator + Burger */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Logo */
+.navbar-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+  transition: color 0.3s;
+}
+
+.navbar-logo:hover {
+  color: #F4A261;
+}
+
+/* Vertical Separator */
+.navbar-separator {
+  width: 2px;
+  height: 30px;
+  background: #d0d0c8;
+}
+
+/* Hamburger Menu */
+.navbar-burger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0;
+  width: 24px;
+}
+
+.navbar-burger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #1a202c;
+  transition: all 0.3s;
+}
+
+.navbar-burger:hover span {
+  background: #F4A261;
+}
+
+/* Center Section: Navigation Links */
+.navbar-links {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.navbar-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4a5568;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-bottom: 0.3rem;
+}
+
+/* Active Link - Bold */
+.navbar-link-active {
+  font-weight: 700;
+  color: #1a202c;
+}
+
+/* Hover Effect - Partial Orange Underline (like 02.webp) */
+.navbar-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: #F4A261;
+  transition: width 0.3s ease;
+}
+
+.navbar-link:hover::after {
+  width: 60%;
+}
+
+.navbar-link-active::after {
+  width: 60%;
+}
+
+/* Right Section: Register Button */
+.navbar-register {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a202c;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  padding: 0.6rem 1.8rem;
+  border: 2px solid #1a202c;
+  border-radius: 0;
+  transition: all 0.3s;
+}
+
+.navbar-register:hover {
+  background: #1a202c;
+  color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .navbar-links {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+
+  .navbar-left {
+    gap: 1rem;
+  }
+
+  .navbar-logo {
+    font-size: 1.2rem;
+  }
+
+  .navbar-separator {
+    height: 24px;
+  }
+
+  .navbar-links {
+    gap: 1rem;
+  }
+
+  .navbar-link {
+    font-size: 0.8rem;
+  }
+
+  .navbar-register {
+    font-size: 0.8rem;
+    padding: 0.5rem 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-links {
+    display: none;
+  }
+
+  .navbar-register {
+    font-size: 0.75rem;
+    padding: 0.4rem 1rem;
+  }
+}
