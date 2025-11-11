@@ -11,6 +11,24 @@
   padding: 0 2rem;
 }
 
+/* Refresh Button */
+.newsfeed-refresh-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.newsfeed-refresh-button {
+  background: transparent;
+  border: 2px solid #1a202c;
+  color: #1a202c;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.8rem 2.5rem;
+  cursor: pointer;
+}
+
 /* Flexbox Layout - 2 per row */
 .newsfeed-grid {
   display: flex;

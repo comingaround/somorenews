@@ -38,12 +38,14 @@ interface NewsfeedContainerProps {
   articles: Article[];
   isLoading?: boolean;
   error?: string;
+  onRefresh?: () => void;
 }
 
 export default function Newsfeed01Container({
   articles,
   isLoading = false,
-  error
+  error,
+  onRefresh
 }: NewsfeedContainerProps) {
 
   // Loading state
@@ -99,6 +101,15 @@ export default function Newsfeed01Container({
   return (
     <section className="newsfeed-01-container">
       <div className="newsfeed-container">
+        {/* Refresh Button */}
+        {onRefresh && (
+          <div className="newsfeed-refresh-wrapper">
+            <button onClick={onRefresh} className="newsfeed-refresh-button">
+              REFRESH
+            </button>
+          </div>
+        )}
+
         <div className="newsfeed-grid">
           {articles.map((article) => (
             <article key={article.id} className="newsfeed-article">
