@@ -1,21 +1,33 @@
 'use client';
 
+import Link from 'next/link';
 import './newsfeed-01-container.css';
 
-// TypeScript interfaces for article data
-export interface ArticleAuthor {
+// TypeScript interfaces for article data (matching NewsAPI response)
+export interface NewsAPISource {
+  id: string | null;
   name: string;
-  role?: string;
-  avatar?: string;
 }
 
+export interface NewsAPIArticle {
+  source: NewsAPISource;
+  author: string | null;
+  title: string;
+  description: string | null;
+  url: string;
+  urlToImage: string | null;
+  publishedAt: string;
+  content: string | null;
+}
+
+// Internal Article interface for our component
 export interface Article {
   id: string | number;
   title: string;
   description?: string;
   content?: string;
   image?: string;
-  author?: ArticleAuthor;
+  author?: string;
   source?: string;
   publishedAt?: string;
   url?: string;
@@ -131,24 +143,14 @@ export default function Newsfeed01Container({
                   {/* Author */}
                   {article.author && (
                     <div className="newsfeed-article-author">
-                      {article.author.avatar ? (
-                        <img
-                          src={article.author.avatar}
-                          alt={article.author.name}
-                          className="newsfeed-article-author-avatar"
-                        />
-                      ) : (
-                        <div className="newsfeed-article-author-avatar-placeholder"></div>
-                      )}
+                      <div className="newsfeed-article-author-avatar-placeholder"></div>
                       <div className="newsfeed-article-author-info">
                         <p className="newsfeed-article-author-name">
-                          {article.author.name}
+                          {article.author}
                         </p>
-                        {article.author.role && (
-                          <p className="newsfeed-article-author-role">
-                            {article.author.role}
-                          </p>
-                        )}
+                        <p className="newsfeed-article-author-role">
+                          News Author
+                        </p>
                       </div>
                     </div>
                   )}
@@ -167,16 +169,12 @@ export default function Newsfeed01Container({
                 </div>
 
                 {/* Read More Link */}
-                {article.url && (
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="newsfeed-article-link"
-                  >
-                    READ MORE →
-                  </a>
-                )}
+                <Link
+                  href={`/newsfeed/${article.id}`}
+                  className="newsfeed-article-link"
+                >
+                  READ MORE →
+                </Link>
               </div>
             </article>
           ))}

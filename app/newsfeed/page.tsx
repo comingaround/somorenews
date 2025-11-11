@@ -1,70 +1,87 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Navbar from "@/components/general/navbar/navbar";
 import Newsfeed01Container from "@/components/newsfeed/newsfeed-01-container/newsfeed-01-container";
-import { Article } from "@/components/newsfeed/newsfeed-01-container/newsfeed-01-container";
+import { Article, NewsAPIArticle } from "@/components/newsfeed/newsfeed-01-container/newsfeed-01-container";
 
 export default function Newsfeed() {
-  // Mock data - this will be replaced with real API data
-  const mockArticles: Article[] = [
-    {
-      id: 1,
-      title: "CLIMATE SCIENTISTS WARN OF ACCELERATING ARCTIC ICE MELT",
-      description: "New research shows Arctic ice is melting at unprecedented rates, with significant implications for global sea levels and weather patterns. Scientists urge immediate action.",
-      image: "/placeholder-news-1.jpg",
-      category: "HUMAN & ENVIRONMENT",
-      author: {
-        name: "Dr. Sarah Johnson",
-        role: "Environmental Correspondent",
-      },
-      source: "BBC News",
-      publishedAt: "2024-01-15T10:30:00Z",
-      url: "https://example.com/article-1"
-    },
-    {
-      id: 2,
-      title: "BREAKTHROUGH IN RENEWABLE ENERGY STORAGE TECHNOLOGY",
-      description: "Researchers have developed a new battery technology that could revolutionize renewable energy storage, making solar and wind power more reliable and cost-effective.",
-      category: "ACADEMIC",
-      author: {
-        name: "Michael Chen",
-        role: "Science Editor",
-      },
-      source: "Reuters",
-      publishedAt: "2024-01-15T09:15:00Z",
-      url: "https://example.com/article-2"
-    },
-    {
-      id: 3,
-      title: "INTERNATIONAL SUMMIT ADDRESSES OCEAN PLASTIC POLLUTION",
-      description: "World leaders gather to discuss comprehensive strategies for combating ocean plastic pollution, with binding commitments expected by end of week.",
-      image: "/placeholder-news-2.jpg",
-      category: "POLITICAL",
-      author: {
-        name: "Emma Williams",
-        role: "Political Analyst",
-      },
-      source: "The Guardian",
-      publishedAt: "2024-01-14T16:45:00Z",
-      url: "https://example.com/article-3"
-    },
-    {
-      id: 4,
-      title: "NEW STUDY REVEALS BENEFITS OF URBAN GREEN SPACES",
-      description: "Comprehensive research demonstrates how urban parks and green spaces significantly improve mental health and community wellbeing in cities worldwide.",
-      category: "HUMAN & ENVIRONMENT",
-      author: {
-        name: "Dr. James Martinez",
-        role: "Urban Planning Expert",
-      },
-      source: "AP News",
-      publishedAt: "2024-01-14T14:20:00Z",
-      url: "https://example.com/article-4"
-    }
-  ];
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
+
+        if (!apiKey) {
+          throw new Error('API key not found');
+        }
+
+        // Paywalled sources to filter out
+        const paywalledSources = [
+          'Bloomberg',
+          'The Wall Street Journal',
+          'Financial Times',
+          'The New York Times',
+          'The Washington Post',
+          'The Economist',
+          'Barron\'s',
+          'MarketWatch',
+          'The Times',
+          'The Telegraph'
+        ];
+
+        const response = await fetch(
+          `https://newsapi.org/v2/top-headlines?country=us&pageSize=50&apiKey=${apiKey}`
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch news');
+        }
+
+        const data = await response.json();
+
+        // Filter out paywalled sources and map to our Article format
+        const filteredArticles = data.articles.filter((article: NewsAPIArticle) =>
+          !paywalledSources.includes(article.source.name)
+        );
+
+        // Take first 12 non-paywalled articles
+        const mappedArticles: Article[] = filteredArticles
+          .slice(0, 12)
+          .map((article: NewsAPIArticle, index: number) => ({
+            id: index,
+            title: article.title,
+            description: article.description || undefined,
+            content: article.content || undefined,
+            image: article.urlToImage || undefined,
+            author: article.author || undefined,
+            source: article.source.name,
+            publishedAt: article.publishedAt,
+            url: article.url,
+          }));
+
+        setArticles(mappedArticles);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, []);
 
   return (
     <>
       <Navbar />
-      <Newsfeed01Container articles={mockArticles} />
+      <Newsfeed01Container
+        articles={articles}
+        isLoading={loading}
+        error={error}
+      />
     </>
   );
 }
